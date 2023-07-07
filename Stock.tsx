@@ -12,13 +12,40 @@ function Stock() {
   const [ edit, setEdit ] = useState(false);
   const ref = firestore().collection('stock');
 
+  let editButton;
+
   async function addItem() {
+    if (item === '' || amount === '') {
+      return;
+    }
     await ref.add({
       name: item,
       amount: parseInt(amount)
     });
     setItem('');
     setAmount('');
+  }
+
+  async function addAmount(id, amount) {
+    amount++;
+    console.log(id, amount);
+    await firestore()
+      .collection('stock')
+      .doc(id)
+      .update({
+        amount: amount,
+      });
+  }
+
+  async function subtractAmount(id, amount) {
+    amount--;
+    console.log(id, amount);
+    await firestore()
+      .collection('stock')
+      .doc(id)
+      .update({
+        amount: amount,
+      });
   }
 
   useEffect(() => {
@@ -45,17 +72,24 @@ function Stock() {
     return null; // or a spinner
   }
 
+  if (edit) {
+    editButton = <Appbar.Action icon='check' onPress={() => setEdit(false)} />;
+  }
+  else {
+    editButton = <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
+  }
+
   return (
     <>
       <Appbar>
         <Appbar.Content title={'Stock'} />
-        <Appbar.Action icon='border-color' />
+        {editButton}
       </Appbar>
       <FlatList
         style={{flex: 1}}
         data={stock}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <Item {...item} />}
+        renderItem={({ item }) => <Item {...item} edit={edit} onMinusPress={() => subtractAmount(item.id, item.amount)} onPlusPress={() => addAmount(item.id, item.amount)} />}
       />
       <View style={styles.inputWrap}>
         <TextInput style={styles.itemInput} label={'New Item'} value={item} onChangeText={setItem} />

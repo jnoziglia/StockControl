@@ -3,7 +3,7 @@ import firestore from '@react-native-firebase/firestore';
 import { List, IconButton, Button } from 'react-native-paper';
 import { Text, View } from 'react-native'
 
-function Item({ id, name, amount }) {
+function Item({ id, name, amount, edit, onMinusPress, onPlusPress }) {
   async function toggleComplete() {
     await firestore()
       .collection('stock')
@@ -17,22 +17,26 @@ function Item({ id, name, amount }) {
     <>
       <List.Item
         title={name}
-        right={props => <Amount {...props} id={id} name={name} amount={amount} />}
+        right={props => <Amount {...props} amount={amount} edit={edit} onMinusPress={onMinusPress} onPlusPress={onPlusPress} />}
       />
     </>
   );
 }
 
-function Amount({ id, name, amount }) {
+function Amount({ amount, edit, onMinusPress, onPlusPress }) {
   return (
     <>
-      <Button mode="elevated" onPress={() => console.log('Pressed')}>
-        -
-      </Button>
+      { edit && amount > 0 && (
+        <Button mode="elevated" onPress={() => onMinusPress()}>
+          -
+        </Button>
+      ) }
       <Text style={{textAlignVertical: 'center'}}>{amount}</Text>
-      <Button mode="elevated" onPress={() => console.log('Pressed')}>
-        +
-      </Button>
+      { edit && (
+        <Button mode="elevated" onPress={() => onPlusPress()}>
+          +
+        </Button>
+      )}
     </>
   );
 }
