@@ -4,7 +4,7 @@ import firestore from '@react-native-firebase/firestore';
 import { Appbar, TextInput, Button } from 'react-native-paper';
 import Item from './Item';
 
-function Stock() {
+const Stock = ({navigation}) => {
   const [ item, setItem ] = useState('');
   const [ amount, setAmount ] = useState('');
   const [ loading, setLoading ] = useState(true);
@@ -24,28 +24,6 @@ function Stock() {
     });
     setItem('');
     setAmount('');
-  }
-
-  async function addAmount(id, amount) {
-    amount++;
-    console.log(id, amount);
-    await firestore()
-      .collection('stock')
-      .doc(id)
-      .update({
-        amount: amount,
-      });
-  }
-
-  async function subtractAmount(id, amount) {
-    amount--;
-    console.log(id, amount);
-    await firestore()
-      .collection('stock')
-      .doc(id)
-      .update({
-        amount: amount,
-      });
   }
 
   useEffect(() => {
@@ -72,15 +50,10 @@ function Stock() {
     return null; // or a spinner
   }
 
-  if (edit) {
-    editButton = <Appbar.Action icon='check' onPress={() => setEdit(false)} />;
-  }
-  else {
-    editButton = <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
-  }
+  editButton = edit ? <Appbar.Action icon='check' onPress={() => setEdit(false)} /> : <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
 
   return (
-    <>
+    <NavigationContainer>
       <Appbar>
         <Appbar.Content title={'Stock'} />
         {editButton}
@@ -102,7 +75,7 @@ function Stock() {
         />
       </View>
       <Button onPress={() => addItem()}>Add Item</Button>
-    </>
+    </NavigationContainer>
   );
 }
 
