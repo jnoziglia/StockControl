@@ -28,7 +28,7 @@ const Item = ({ id, name, amount, edit=false, selected, selectMode, onItemPress 
   }
   else {
     return (
-      <TouchableHighlight underlayColor="red" onLongPress={() => onItemPress(id)}>
+      <TouchableHighlight underlayColor="white" onLongPress={() => onItemPress(id)}>
         {itemView}
       </TouchableHighlight>
     );
