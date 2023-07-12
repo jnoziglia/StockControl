@@ -3,7 +3,7 @@ import firestore from '@react-native-firebase/firestore';
 import { List, IconButton, Button } from 'react-native-paper';
 import { Text, View, StyleSheet } from 'react-native'
 
-function Amount({ id, amount, edit, onMinusPress, onPlusPress }) {
+function Amount({ id, amount, edit }) {
   async function addAmount() {
       amount++;
       console.log(id, amount);
@@ -29,13 +29,13 @@ function Amount({ id, amount, edit, onMinusPress, onPlusPress }) {
   return (
     <>
       { edit && amount > 0 && (
-        <Button style={styles.amountButtons} compact={true} mode="outlined" onPress={() => subtractAmount()}>
+        <Button style={styles.amountButtons} contentStyle={styles.amountButtonsInner} compact={true} mode="outlined" onPress={() => subtractAmount()}>
           <Text>-</Text>
         </Button>
       ) }
-      <Text style={{textAlignVertical: 'center'}}>{amount}</Text>
+      <Text style={{textAlignVertical: 'center', marginLeft: 20}}>{amount}</Text>
       { edit && (
-        <Button style={styles.amountButtons} compact={true} mode="outlined" onPress={() => addAmount()}>
+        <Button style={styles.amountButtons} contentStyle={styles.amountButtonsInner} compact={true} mode="outlined" onPress={() => addAmount()}>
           <Text>+</Text>
         </Button>
       )}
@@ -45,8 +45,13 @@ function Amount({ id, amount, edit, onMinusPress, onPlusPress }) {
 
 const styles = StyleSheet.create({
   amountButtons: {
-    marginHorizontal: 10
+    marginLeft: 20,
+    height: 20
   },
+  amountButtonsInner: {
+    paddingVertical: 0,
+    marginVertical: -12
+  }
 });
 
 export default React.memo(Amount);
