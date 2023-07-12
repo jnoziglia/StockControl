@@ -2,15 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { FlatList, View, Text, StyleSheet } from 'react-native';
 import firestore from '@react-native-firebase/firestore';
-import { Appbar, TextInput, Button } from 'react-native-paper';
+import { Appbar, TextInput, Button, IconButton, MD3Colors } from 'react-native-paper';
 import Item from './Item';
 
 const Stock = ({navigation}) => {
-  const [ item, setItem ] = useState('');
-  const [ amount, setAmount ] = useState('');
-  const [ loading, setLoading ] = useState(true);
-  const [ stock, setStock ] = useState([]);
-  const [ edit, setEdit ] = useState(false);
+  const [item, setItem] = useState('');
+  const [amount, setAmount] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [stock, setStock] = useState([]);
+  const [edit, setEdit] = useState(false);
+  const [selectMode, setSelectMode] = React.useState(false);
+  const [selectedItems, setSelectedItems] = React.useState([]);
   const ref = firestore().collection('stock');
 
   let editButton;
@@ -27,6 +29,29 @@ const Stock = ({navigation}) => {
     setAmount('');
   }
 
+  const toggleSelect = (id) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter(item => item !== id));
+    } else {
+      setSelectedItems([...selectedItems, id]);
+    }
+  }
+
+  useEffect(() => {
+    console.log('Do something after selectedItems has changed', selectedItems);
+    if (selectedItems.length) {
+      setSelectMode(true);
+    }
+    else {
+      setSelectMode(false);
+    }
+  }, [selectedItems]);
+
+
+  useEffect(() => {
+              console.log('Do something after selectMode has changed', selectMode);
+           }, [selectMode]);
+
   useEffect(() => {
     return ref.onSnapshot((querySnapshot) => {
       const list = [];
@@ -38,9 +63,7 @@ const Stock = ({navigation}) => {
             amount,
           });
         });
-
         setStock(list);
-
         if (loading) {
           setLoading(false);
         }
@@ -54,16 +77,17 @@ const Stock = ({navigation}) => {
   editButton = edit ? <Appbar.Action icon='check' onPress={() => setEdit(false)} /> : <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
 
   return (
-    <NavigationContainer>
+    <>
       <Appbar>
         <Appbar.Content title={'Stock'} />
         {editButton}
+        <Appbar.Action icon='cart-outline' onPress={() => navigation.navigate('Shopping', {list: stock})} />
       </Appbar>
       <FlatList
         style={{flex: 1}}
         data={stock}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <Item {...item} edit={edit} onMinusPress={() => subtractAmount(item.id, item.amount)} onPlusPress={() => addAmount(item.id, item.amount)} />}
+        renderItem={({ item }) => <Item {...item} edit={edit} selectMode={selectMode} selected={selectedItems.includes(item.id)} onItemPress={toggleSelect} />}
       />
       <View style={styles.inputWrap}>
         <TextInput style={styles.itemInput} label={'New Item'} value={item} onChangeText={setItem} />
@@ -76,7 +100,7 @@ const Stock = ({navigation}) => {
         />
       </View>
       <Button onPress={() => addItem()}>Add Item</Button>
-    </NavigationContainer>
+    </>
   );
 }
 
