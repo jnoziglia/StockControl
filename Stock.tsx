@@ -15,8 +15,6 @@ const Stock = ({navigation}) => {
   const [selectedItems, setSelectedItems] = React.useState([]);
   const ref = firestore().collection('stock');
 
-  let editButton;
-
   async function addItem() {
     if (item === '' || amount === '') {
       return;
@@ -29,28 +27,32 @@ const Stock = ({navigation}) => {
     setAmount('');
   }
 
-  const toggleSelect = (id) => {
-    if (selectedItems.includes(id)) {
-      setSelectedItems(selectedItems.filter(item => item !== id));
-    } else {
-      setSelectedItems([...selectedItems, id]);
-    }
+  async function deleteItems() {
+    const batch = firestore().batch();
+    selectedItems.forEach((id) => {
+      const docRef = ref.doc(id);
+      batch.delete(docRef);
+    });
+    await batch.commit();
+    setSelectedItems([]);
+    setSelectMode(false);
   }
 
-  useEffect(() => {
-    console.log('Do something after selectedItems has changed', selectedItems);
-    if (selectedItems.length) {
+  const toggleSelect = (id) => {
+    let selectedItemsUpdated;
+    if (selectedItems.includes(id)) {
+      selectedItemsUpdated = selectedItems.filter((item) => item !== id);
+    } else {
+      selectedItemsUpdated = [...selectedItems, id];
+    }
+    setSelectedItems(selectedItemsUpdated);
+    if (selectedItemsUpdated.length) {
       setSelectMode(true);
     }
     else {
       setSelectMode(false);
     }
-  }, [selectedItems]);
-
-
-  useEffect(() => {
-              console.log('Do something after selectMode has changed', selectMode);
-           }, [selectMode]);
+  };
 
   useEffect(() => {
     return ref.onSnapshot((querySnapshot) => {
@@ -74,14 +76,14 @@ const Stock = ({navigation}) => {
     return null; // or a spinner
   }
 
-  editButton = edit ? <Appbar.Action icon='check' onPress={() => setEdit(false)} /> : <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
+  const editButton = edit ? <Appbar.Action icon='check' onPress={() => setEdit(false)} /> : <Appbar.Action icon='border-color' onPress={() => setEdit(true)} />;
+  const actions = selectMode ? <Appbar.Action icon='delete' onPress={() => deleteItems()} /> : [edit ? <Appbar.Action icon='check' onPress={() => setEdit(false)} key='check' /> : <Appbar.Action icon='border-color' onPress={() => setEdit(true)} key='edit' />,<Appbar.Action icon='cart-outline' onPress={() => navigation.navigate('Shopping', {list: stock})} key='cart' />];
 
   return (
     <>
       <Appbar>
         <Appbar.Content title={'Stock'} />
-        {editButton}
-        <Appbar.Action icon='cart-outline' onPress={() => navigation.navigate('Shopping', {list: stock})} />
+        {actions}
       </Appbar>
       <FlatList
         style={{flex: 1}}
